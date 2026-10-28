@@ -1,0 +1,45 @@
+name: Reproducible steel study
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: steel-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.19'
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked --extra dev
+      - run: uv run --no-sync ruff check src tests scripts
+      - run: uv run --no-sync ruff format --check src tests scripts
+      - run: uv run --no-sync pytest
+      - run: uv run --no-sync steel-faults train
+      - run: uv run --no-sync python scripts/publish_report.py
+      - run: uv run --no-sync python scripts/check_notebook.py
+      - run: uv build
+      - name: Install and train wheel outside checkout
+        run: |
+          uv venv /tmp/steel-wheel
+          uv pip install --python /tmp/steel-wheel/bin/python --require-hashes -r requirements.txt
+          uv pip install --python /tmp/steel-wheel/bin/python --no-deps dist/*.whl
+          cd /tmp
+          /tmp/steel-wheel/bin/steel-faults train --data "$GITHUB_WORKSPACE/data/raw/Faults.NNA" --output steel-wheel-model
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-python-${{ matrix.python }}
+          path: |
+            reports/
+            var/executed-study.ipynb
+            dist/

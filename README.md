@@ -1,49 +1,64 @@
-# Proyecto: Clasificación de Fallas en Placas de Acero
+# Steel Defect Study
 
-Este proyecto de Machine Learning tiene como objetivo **detectar fallas en placas de acero** (Steel Plates Faults) utilizando algoritmos de clasificación. Está orientado al ámbito de **automatización de procesos industriales**, para ilustrar cómo se pueden analizar datos de sensores o características físicas con el fin de identificar o predecir defectos en la producción.
+**Clasificar el tipo de defecto, mostrar los errores por clase y señalar cuándo revisar el resultado.**
 
-## Estructura del Proyecto
+Python · scikit-learn · Streamlit · UCI
 
-- **data/**  
-  Contiene el dataset `SteelPlateFaults.csv` (descargado de UCI o fuente correspondiente).
+Reconstrucción del experimento con la fuente oficial: 1.941 observaciones, 27 características y siete tipos de defecto. No hay clase sana. La aplicación trabaja con características medidas y no con imágenes.
 
-- **notebooks/**  
-  Contiene los cuadernos de Jupyter con el análisis exploratorio de datos (EDA), el preprocesamiento y los modelos de Machine Learning.
+**Estado:** núcleo implementado y ejecutado; 11 pruebas locales aprobadas. Revisión visual, evidencia y CI pendientes de cierre. La versión anterior queda preservada en Git.
 
-- **README.md**  
-  Descripción general del proyecto, instrucciones de uso y guía de instalación.
+## Ejecutar
 
-- **.gitignore**  
-  Archivo que indica los ficheros y carpetas que no se deben incluir en el repositorio.
+Con Python 3.11–3.14 y uv:
 
-- **environment.yml** *(opcional)*  
-  Archivo para reproducir el entorno de conda.
+```bash
+git clone https://github.com/GzoC/SteelPlatesFaultsClassification.git
+cd SteelPlatesFaultsClassification
+git switch codex/steel-faults-rebuild
+uv sync --locked --extra dev
+uv run --no-sync steel-faults train
+uv run --no-sync steel-faults dashboard
+```
 
-## Configuración del Entorno
+Abre http://127.0.0.1:8501. Puedes explorar casos reservados, comparar la clase propuesta con la observada, revisar puntuaciones y cargar un CSV de hasta 100 filas con las 27 características del ejemplo descargable. Las etiquetas no entran al modelo. El CSV se procesa localmente sin guardarlo en disco.
 
-1. Instala [Anaconda/Miniconda](https://docs.conda.io/en/latest/).
-2. Crea el entorno `SteelPlatesEnv` usando `conda create --prefix "ruta\SteelPlatesEnv" python=3.9 -y`.
-3. Activa el entorno con `conda activate "ruta\SteelPlatesEnv"`.
-4. Instala los paquetes necesarios: `conda install jupyter pandas numpy scikit-learn matplotlib seaborn -y`.
-5. Lanza Jupyter Notebook con `jupyter notebook`.
+## Resultado medido
 
-## Uso
+El modelo se eligió por macro-F1 de validación, antes de consultar el test. En las 389 observaciones reservadas:
 
-1. Clona este repositorio en tu máquina local.
-2. Navega hasta `notebooks/`.
-3. Abre el archivo `01_classification_steel_plates_faults.ipynb` con Jupyter Notebook.
-4. Ejecuta las celdas paso a paso para:
-   - Realizar el análisis exploratorio de datos (EDA).
-   - Preprocesar el dataset.
-   - Entrenar y evaluar modelos de clasificación (Logistic Regression, Random Forest, etc.).
-   - Ajustar hiperparámetros y ver la evolución de los resultados.
+| Método | Macro-F1 | Accuracy |
+|---|---:|---:|
+| Clase mayoritaria | 0,0736 | 0,3470 |
+| Regresión logística | 0,6635 | 0,6530 |
+| Random Forest | 0,8080 | 0,7789 |
 
-## Registro Diario
+Las clases no tienen igual desempeño: F1 de Bumps es 0,6667 y de Pastry 0,6780. Dirtiness solo tiene 11 ejemplos de prueba. La regla de puntuación/margen marca 169 casos para revisión; no garantiza certeza en los restantes. [Informe generado con métricas por clase y límites](reports/RESULTS.md).
 
-- Se encuentra en la última sección del Notebook, donde se registran los algoritmos probados, el mejor rendimiento obtenido y una breve explicación de por qué.
+## Decisiones de diseño
 
-## Contribuciones
+- Pipeline persistido: transformaciones ajustadas solo sobre entrenamiento; separación estratificada 60/20/20 y semilla fija.
+- Comparación con una referencia mayoritaria y un modelo lineal. Selección por macro-F1 para considerar clases minoritarias. No se usa SMOTE.
+- Contrato estricto de 27 entradas, valores finitos, geometría coherente y tipo de acero exclusivo. Orden de columnas normalizado.
+- Puntuaciones sin calibración, margen entre clases y aviso fuera de rango. Importancia global por permutación calculada en validación.
+- Hash de datos y modelo, versión de scikit-learn, particiones y métricas guardados con el artefacto.
 
-¡Siéntete libre de contribuir con mejoras, nuevas funcionalidades o correcciones!
+## Reproducir
 
----
+```bash
+uv run --no-sync pytest
+uv run --no-sync ruff check src tests scripts
+uv run --no-sync python scripts/publish_report.py
+uv run --no-sync python scripts/check_notebook.py
+uv build
+```
+
+El entrenamiento crea var/model. El informe se genera desde su manifiesto y el notebook llama al mismo entrenamiento y predictor. Solo carga artefactos locales confiables; un checksum detecta corrupción, no autentica modelos de terceros.
+
+[Fuente y licencia de datos](data/README.md) · [Modelo y límites](docs/MODEL_CARD.md) · [Resultados completos](reports/evaluation.json).
+
+No puede estimarse aceptación/rechazo de piezas con un dataset que solo contiene defectos. Tampoco se acredita generalización a otras plantas o lotes sin sus identificadores. Las limitaciones forman parte de la evaluación.
+
+English: Reproducible seven-class steel defect study with per-class evaluation, local inference and explicit review flags. No healthy class or industrial deployment is claimed.
+
+Autor: [GzoC](https://github.com/GzoC). Código MIT. Datos: Buscema, Terzi y Tastle (2010), UCI Steel Plates Faults, DOI 10.24432/C5J88N, CC BY 4.0.

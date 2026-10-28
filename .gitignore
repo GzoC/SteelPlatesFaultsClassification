@@ -1,28 +1,11 @@
-# Byte-compiled / optimized / DLL files
+.venv/
+var/
+dist/
+build/
+*.egg-info/
 __pycache__/
 *.py[cod]
-*.so
-*.h5
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
-
-# Environments
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
 .env
-.venv
-.ipynb_checkpoints
-.DS_Store
-
-# Conda environment directory
-D:\gzo\myProjects\dataAnalyst\environments\SteelPlatesEnv\
-
-# Build
-build/
-dist/
-*.egg-info/
-
-# Logs
-*.log
-
-# VSCode settings (opcional)
-.vscode/
