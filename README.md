@@ -6,7 +6,9 @@ Python · scikit-learn · Streamlit · UCI
 
 Reconstrucción del experimento con la fuente oficial: 1.941 observaciones, 27 características y siete tipos de defecto. No hay clase sana. La aplicación trabaja con características medidas y no con imágenes.
 
-**Estado:** núcleo implementado y ejecutado; 11 pruebas locales aprobadas. Revisión visual, evidencia y CI pendientes de cierre. La versión anterior queda preservada en Git.
+**Estado:** demostrador local validado, 11 pruebas aprobadas y CI en Python 3.11/3.13. Incluye revisión real de carga/exportación CSV y diseño móvil. [Evidencia y alcance de la validación](docs/VALIDATION.md). La versión anterior queda preservada en Git.
+
+![Inferencia real con un caso incorrecto marcado para revisión](docs/evidence/desktop-case.png)
 
 ## Ejecutar
 
@@ -15,13 +17,14 @@ Con Python 3.11–3.14 y uv:
 ```bash
 git clone https://github.com/GzoC/SteelPlatesFaultsClassification.git
 cd SteelPlatesFaultsClassification
-git switch codex/steel-faults-rebuild
 uv sync --locked --extra dev
 uv run --no-sync steel-faults train
 uv run --no-sync steel-faults dashboard
 ```
 
 Abre http://127.0.0.1:8501. Puedes explorar casos reservados, comparar la clase propuesta con la observada, revisar puntuaciones y cargar un CSV de hasta 100 filas con las 27 características del ejemplo descargable. Las etiquetas no entran al modelo. El CSV se procesa localmente sin guardarlo en disco.
+
+Recorrido de dos minutos: revisa la fila 97, donde el modelo se equivoca y sugiere revisión; cambia a la fila 169, correctamente clasificada. La fila 1662 muestra un error **sin** marca de revisión: la regla no garantiza certeza. En **Evaluación**, compara los modelos y sus errores por clase. En **Consultar CSV**, descarga el ejemplo, cárgalo y exporta sus siete resultados. Los ejemplos representan una observación por clase, elegida por orden de partición sin filtrar aciertos.
 
 ## Resultado medido
 
