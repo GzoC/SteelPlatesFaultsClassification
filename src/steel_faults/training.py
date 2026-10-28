@@ -170,7 +170,8 @@ def train(data_path, output):
         ),
         "examples": [
             {"row": int(i), "features": x.iloc[i].to_dict(), "observed": str(y.iloc[i])}
-            for i in test_ids[:7]
+            # One observation per class, in split order; never select by correctness.
+            for i in [next(i for i in test_ids if y.iloc[i] == label) for label in CLASSES]
         ],
     }
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

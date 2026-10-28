@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -54,7 +55,18 @@ def render():
             )
         if result["outside_training_range"]:
             st.write("Fuera de rango observado:", result["outside_training_range"])
-        st.bar_chart(pd.Series(result["scores"], name="Puntuación"), horizontal=True)
+        scores = pd.DataFrame(result["scores"].items(), columns=["Defecto", "Puntuación"])
+        chart = (
+            alt.Chart(scores)
+            .mark_bar(color="#225c83")
+            .encode(
+                x=alt.X("Puntuación:Q", scale=alt.Scale(domain=[0, 1])),
+                y=alt.Y("Defecto:N", sort="-x", title=None),
+                tooltip=["Defecto:N", alt.Tooltip("Puntuación:Q", format=".3f")],
+            )
+            .properties(height=230)
+        )
+        st.altair_chart(chart, width="stretch")
         st.caption(
             "Puntuaciones sin calibración probabilística. Revisión sugerida si máximo <0,60, margen <0,15 o algún valor sale del rango de entrenamiento."
         )

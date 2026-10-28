@@ -1609,6 +1609,7 @@ name = "steel-faults-study"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "altair" },
     { name = "joblib" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -1628,6 +1629,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "altair", specifier = ">=6,<7" },
     { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6,<8" },
     { name = "joblib", specifier = ">=1.4,<2" },
     { name = "nbclient", marker = "extra == 'dev'", specifier = ">=0.10,<1" },

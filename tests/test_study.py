@@ -36,6 +36,8 @@ def test_partitions_and_selection_are_explicit(trained):
         report["validation"], key=lambda n: report["validation"][n]["macro_f1"]
     )
     assert sum(map(sum, report["test"][report["selected"]]["confusion_matrix"])) == len(splits[2])
+    assert {example["observed"] for example in report["examples"]} == set(CLASSES)
+    assert {example["row"] for example in report["examples"]} <= splits[2]
 
 
 def test_reload_equivalence_and_column_order(trained):
