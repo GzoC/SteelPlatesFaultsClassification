@@ -34,10 +34,11 @@ def render():
         example = st.selectbox(
             "Observación UCI", m["examples"], format_func=lambda e: f"Fila {e['row'] + 1}"
         )
-        st.dataframe(
-            pd.Series(example["features"], name="Valor").rename_axis("Característica"),
-            width="stretch",
-        )
+        with st.expander("Ver las 27 características medidas"):
+            st.dataframe(
+                pd.Series(example["features"], name="Valor").rename_axis("Característica"),
+                width="stretch",
+            )
         result = predictor.predict(pd.DataFrame([example["features"]]))[0]
         a, b, c = st.columns(3)
         a.metric("Clase propuesta", result["class"])
@@ -48,7 +49,7 @@ def render():
                 "Revisión sugerida: puntuaciones poco separadas o valores fuera del rango de entrenamiento."
             )
         else:
-            st.success(
+            st.info(
                 "Sin marca de revisión por esta regla. No equivale a certeza ni a aprobación de calidad."
             )
         if result["outside_training_range"]:
@@ -93,7 +94,7 @@ def render():
         st.subheader("Resultados por tipo de defecto")
         st.dataframe(pd.DataFrame(chosen["per_class"]).T.loc[CLASSES], width="stretch")
         st.caption(
-            "Matriz: filas observadas, columnas propuestas. No hay clase sin defecto; no se pueden estimar falsas aceptaciones de piezas sanas con este dataset."
+            "Matriz: filas observadas, columnas propuestas. No hay clase sin defecto; no se pueden evaluar decisiones de aceptación/rechazo de piezas con este dataset."
         )
         st.dataframe(
             pd.DataFrame(chosen["confusion_matrix"], index=CLASSES, columns=CLASSES),
